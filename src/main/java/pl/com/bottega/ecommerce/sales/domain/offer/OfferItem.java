@@ -21,7 +21,7 @@ public class OfferItem {
     // product
     private String productId;
 
-    private BigDecimal productPrice;
+    private Money productPrice;
 
     private String productName;
 
@@ -31,22 +31,20 @@ public class OfferItem {
 
     private int quantity;
 
-    private BigDecimal totalCost;
-
-    private String currency;
+    private Money totalCost;
 
     // discount
     private String discountCause;
 
-    private BigDecimal discount;
+    private Money discount;
 
-    public OfferItem(String productId, BigDecimal productPrice, String productName, Date productSnapshotDate, String productType,
+    public OfferItem(String productId, Money productPrice, String productName, Date productSnapshotDate, String productType,
             int quantity) {
         this(productId, productPrice, productName, productSnapshotDate, productType, quantity, null, null);
     }
 
-    public OfferItem(String productId, BigDecimal productPrice, String productName, Date productSnapshotDate, String productType,
-            int quantity, BigDecimal discount, String discountCause) {
+    public OfferItem(String productId, Money productPrice, String productName, Date productSnapshotDate, String productType,
+            int quantity, Money discount, String discountCause) {
         this.productId = productId;
         this.productPrice = productPrice;
         this.productName = productName;
@@ -57,12 +55,12 @@ public class OfferItem {
         this.discount = discount;
         this.discountCause = discountCause;
 
-        BigDecimal discountValue = new BigDecimal(0);
+        Money discountValue = new Money(new BigDecimal(0));
         if (discount != null) {
             discountValue = discountValue.add(discount);
         }
 
-        this.totalCost = productPrice.multiply(new BigDecimal(quantity))
+        this.totalCost = productPrice.multiply(new Money(new BigDecimal(quantity)))
                                      .subtract(discountValue);
     }
 
@@ -70,7 +68,7 @@ public class OfferItem {
         return productId;
     }
 
-    public BigDecimal getProductPrice() {
+    public Money getProductPrice() {
         return productPrice;
     }
 
@@ -86,15 +84,11 @@ public class OfferItem {
         return productType;
     }
 
-    public BigDecimal getTotalCost() {
+    public Money getTotalCost() {
         return totalCost;
     }
 
-    public String getTotalCostCurrency() {
-        return currency;
-    }
-
-    public BigDecimal getDiscount() {
+    public Money getDiscount() {
         return discount;
     }
 
@@ -108,7 +102,7 @@ public class OfferItem {
 
     @Override
     public int hashCode() {
-        return Objects.hash(currency, discount, discountCause, productId, productName, productPrice, productSnapshotDate, productType,
+        return Objects.hash(discount, discountCause, productId, productName, productPrice, productSnapshotDate, productType,
                 quantity, totalCost);
     }
 
@@ -124,8 +118,7 @@ public class OfferItem {
             return false;
         }
         OfferItem other = (OfferItem) obj;
-        return Objects.equals(currency, other.currency)
-               && Objects.equals(discount, other.discount)
+        return Objects.equals(discount, other.discount)
                && Objects.equals(discountCause, other.discountCause)
                && Objects.equals(productId, other.productId)
                && Objects.equals(productName, other.productName)
@@ -138,7 +131,7 @@ public class OfferItem {
 
     /**
      *
-     * @param item
+     * @param other
      * @param delta
      *            acceptable percentage difference
      * @return
@@ -178,8 +171,8 @@ public class OfferItem {
             return false;
         }
 
-        BigDecimal max;
-        BigDecimal min;
+        Money max;
+        Money min;
         if (totalCost.compareTo(other.totalCost) > 0) {
             max = totalCost;
             min = other.totalCost;
@@ -188,8 +181,8 @@ public class OfferItem {
             min = totalCost;
         }
 
-        BigDecimal difference = max.subtract(min);
-        BigDecimal acceptableDelta = max.multiply(BigDecimal.valueOf(delta / 100));
+        Money difference = max.subtract(min);
+        Money acceptableDelta = max.multiply(new Money(BigDecimal.valueOf(delta / 100)));
 
         return acceptableDelta.compareTo(difference) > 0;
     }
