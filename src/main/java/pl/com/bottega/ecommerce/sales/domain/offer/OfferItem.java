@@ -23,8 +23,6 @@ public class OfferItem {
 
     private int quantity;
 
-    private Money totalCost;
-
     // discount
     private String discountCause;
 
@@ -42,14 +40,6 @@ public class OfferItem {
         this.quantity = quantity;
         this.discount = discount;
         this.discountCause = discountCause;
-
-        Money discountValue = new Money(new BigDecimal(0));
-        if (discount != null) {
-            discountValue = discountValue.add(discount);
-        }
-
-        this.totalCost = productPrice.multiply(new Money(new BigDecimal(quantity)))
-                                     .subtract(discountValue);
     }
 
     public String getProductId() {
@@ -72,10 +62,6 @@ public class OfferItem {
         return product.getProductType();
     }
 
-    public Money getTotalCost() {
-        return totalCost;
-    }
-
     public Money getDiscount() {
         return discount;
     }
@@ -90,7 +76,7 @@ public class OfferItem {
 
     @Override
     public int hashCode() {
-        return Objects.hash(discount, discountCause, product, quantity, totalCost);
+        return Objects.hash(discount, discountCause, product, quantity, totalCost());
     }
 
     @Override
@@ -109,7 +95,7 @@ public class OfferItem {
                && Objects.equals(discountCause, other.discountCause)
                && Objects.equals(product, other.product)
                && quantity == other.quantity
-               && Objects.equals(totalCost, other.totalCost);
+               && Objects.equals(totalCost(), other.totalCost());
     }
 
     /**
@@ -130,18 +116,27 @@ public class OfferItem {
 
         Money max;
         Money min;
-        if (totalCost.compareTo(other.totalCost) > 0) {
-            max = totalCost;
-            min = other.totalCost;
+        if (totalCost().compareTo(other.totalCost()) > 0) {
+            max = totalCost();
+            min = other.totalCost();
         } else {
-            max = other.totalCost;
-            min = totalCost;
+            max = other.totalCost();
+            min = totalCost();
         }
 
         Money difference = max.subtract(min);
         Money acceptableDelta = max.multiply(new Money(BigDecimal.valueOf(delta / 100)));
 
         return acceptableDelta.compareTo(difference) > 0;
+    }
+
+    public Money totalCost()
+    {
+        Money discountValue = new Money(new BigDecimal(0));
+        if (discount != null) {
+            discountValue = discountValue.add(discount);
+        }
+        return product.getProductPrice().multiply(new Money(new BigDecimal(quantity))).subtract(discountValue);
     }
 
 }
